@@ -17,11 +17,11 @@ int main(int argc, const char* argv[])
 						"  --scale       (-s)  Scale (2.0 = Retina, default=current)\n"
 						"  --bits        (-b)  Color depth (default=current)\n"
 						"  --freq        (-f)  Frequency (default=none)\n"
-                        "  --interlaced  (-i)  Interlaced flag (default=off)\n"
+						"  --interlaced  (-i)  Interlaced flag (default=off)\n"
 						"  --display     (-d)  Select display # (default=main)\n"
 						"  --displays    (-ld) List available displays\n"
 						"  --modes       (-lm) List available modes\n"
-                        "  --commands    (-lc) List available command-lines\n"
+						"  --commands    (-lc) List available command-lines\n"
 						"\n");
 	}
 }
