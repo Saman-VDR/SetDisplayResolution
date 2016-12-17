@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import <dlfcn.h>
 #import "utils.h"
 
 int cmdline_main(int argc, const char * argv[])
@@ -161,51 +160,51 @@ int cmdline_main(int argc, const char * argv[])
             }
             return -1;
         }
-
-		uint32_t nDisplays;
-		CGDirectDisplayID displays[0x10];
-		CGGetOnlineDisplayList(0x10, displays, &nDisplays);
-		
-		//displays[0] = CGMainDisplayID();
-		
-		
-		CGDirectDisplayID display;
-	    
-		if (displayNo > 0)
-		{
-			if (displayNo > nDisplays -1)
-			{
-				fprintf (stderr, "Error: display index %d exceeds display count %d\n", displayNo, nDisplays);
-				exit(1);
-			}
-			display = displays[displayNo];
-		}
-		else
-		{
-		    display = CGMainDisplayID();
-		}
-		
-		if (listDisplays)
-		{
-			for (int i=0; i<nDisplays; i++)
-			{
-				int modeNum;
-				CGSGetCurrentDisplayMode(display, &modeNum);
-				modes_D4 mode;
-				CGSGetDisplayModeDescriptionOfLength(display, modeNum, &mode, 0xD4);
-				
-				int mBitres = (mode.derived.depth == 4) ? 32 : 16;
+        
+        uint32_t nDisplays;
+        CGDirectDisplayID displays[0x10];
+        CGGetOnlineDisplayList(0x10, displays, &nDisplays);
+        
+        //displays[0] = CGMainDisplayID();
+        
+        
+        CGDirectDisplayID display;
+        
+        if (displayNo > 0)
+        {
+            if (displayNo > nDisplays -1)
+            {
+                fprintf (stderr, "Error: display index %d exceeds display count %d\n", displayNo, nDisplays);
+                exit(1);
+            }
+            display = displays[displayNo];
+        }
+        else
+        {
+            display = CGMainDisplayID();
+        }
+        
+        if (listDisplays)
+        {
+            for (int i=0; i<nDisplays; i++)
+            {
+                int modeNum;
+                CGSGetCurrentDisplayMode(display, &modeNum);
+                modes_D4 mode;
+                CGSGetDisplayModeDescriptionOfLength(display, modeNum, &mode, 0xD4);
+                
+                int mBitres = (mode.derived.depth == 4) ? 32 : 16;
                 interlaced = ((mode.derived.flags & kDisplayModeInterlacedFlag) == kDisplayModeInterlacedFlag);
                 
                 if (interlaced)
                     fprintf (stdout, "Display %d: { resolution = %dx%d,  scale = %.1f,  freq = %d,  bits/pixel = %d, interlaced }\n", i, mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mBitres);
                 else
                     fprintf (stdout, "Display %d: { resolution = %dx%d,  scale = %.1f,  freq = %d,  bits/pixel = %d }\n", i, mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mBitres);
-				
-			}
-			
-			return 0;
-		}
+                
+            }
+            
+            return 0;
+        }
         if (listModes)
         {
             int nModes;
@@ -229,30 +228,30 @@ int cmdline_main(int argc, const char * argv[])
                     continue;
                 
                 interlaced = ((mode.derived.flags & kDisplayModeInterlacedFlag) == kDisplayModeInterlacedFlag);
-                fprintf (stdout, "%dx%d  \t%.1f\t%d\t%d%s\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mBitres, (interlaced ? " interlaced" : ""));                
+                fprintf (stdout, "%dx%d  \t%.1f\t%d\t%d%s\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mBitres, (interlaced ? " interlaced" : ""));
             }
             
             free(modes);
             
             return 0;
         }
-
-		if (listCommands)
-		{
-			int nModes;
-			modes_D4* modes;
-			CopyAllDisplayModes(display, &modes, &nModes);
+        
+        if (listCommands)
+        {
+            int nModes;
+            modes_D4* modes;
+            CopyAllDisplayModes(display, &modes, &nModes);
             
-			fprintf (stdout, "Available command-lines\n******************************************\n");
-			for (int i=0; i<nModes; i++)
-			{
-				modes_D4 mode = modes[i];
-				if (width && mode.derived.width != width)
-					continue;
-				if (height && mode.derived.height != height)
-					continue;
-				if (scale && mode.derived.density != scale)
-					continue;
+            fprintf (stdout, "Available command-lines\n******************************************\n");
+            for (int i=0; i<nModes; i++)
+            {
+                modes_D4 mode = modes[i];
+                if (width && mode.derived.width != width)
+                    continue;
+                if (height && mode.derived.height != height)
+                    continue;
+                if (scale && mode.derived.density != scale)
+                    continue;
                 if (freq && mode.derived.freq != freq)
                     continue;
                 int mBitres = (mode.derived.depth == 4) ? 32 : 16;
@@ -264,60 +263,60 @@ int cmdline_main(int argc, const char * argv[])
                     fprintf (stdout, "-d %d -w %d -h %d -s %.0f%s -f %d -b %d\n", displayNo, mode.derived.width, mode.derived.height, mode.derived.density, (interlaced ? " -i" : ""), mode.derived.freq, mBitres);
                 else
                     fprintf (stdout, "-w %d -h %d -s %.0f%s -f %d -b %d\n", mode.derived.width, mode.derived.height, mode.derived.density, (interlaced ? " -i" : ""), mode.derived.freq, mBitres);
-				
-			}
-			
-			free(modes);
-			
-			return 0;
+                
+            }
+            
+            free(modes);
+            
+            return 0;
         }
-		
-		if (rotation != -1.0f)
-		{
-			fprintf (stderr, "Sorry, cannot adjust rotation at this time!\n");
-			exit(1);
-		}
-		
-		// fill in missing details
-		{
-			int modeNum;
-			CGSGetCurrentDisplayMode(display, &modeNum);
-			modes_D4 mode;
-			CGSGetDisplayModeDescriptionOfLength(display, modeNum, &mode, 0xD4);
-			
-			if (!width && !height)
-			{
-				width = mode.derived.width;
-				height = mode.derived.height;
-			}
-			if (!scale)
-			{
-				scale = mode.derived.density;
-			}
-			int mBitres = (mode.derived.depth == 4) ? 32 : 16;
-			if (!bitRes)
-			{
-				bitRes = mBitres;
-			}
-		}
-		
-		
-		{
-			int nModes;
-			modes_D4* modes;
-			CopyAllDisplayModes(display, &modes, &nModes);
-			
-			int iMode = -1;
-			
-			for (int i=0; i<nModes; i++)
-			{
-				modes_D4 mode = modes[i];
-				if (width && mode.derived.width != width)
-					continue;
-				if (height && mode.derived.height != height)
-					continue;
-				if (scale && mode.derived.density != scale)
-					continue;
+        
+        if (rotation != -1.0f)
+        {
+            fprintf (stderr, "Sorry, cannot adjust rotation at this time!\n");
+            exit(1);
+        }
+        
+        // fill in missing details
+        {
+            int modeNum;
+            CGSGetCurrentDisplayMode(display, &modeNum);
+            modes_D4 mode;
+            CGSGetDisplayModeDescriptionOfLength(display, modeNum, &mode, 0xD4);
+            
+            if (!width && !height)
+            {
+                width = mode.derived.width;
+                height = mode.derived.height;
+            }
+            if (!scale)
+            {
+                scale = mode.derived.density;
+            }
+            int mBitres = (mode.derived.depth == 4) ? 32 : 16;
+            if (!bitRes)
+            {
+                bitRes = mBitres;
+            }
+        }
+        
+        
+        {
+            int nModes;
+            modes_D4* modes;
+            CopyAllDisplayModes(display, &modes, &nModes);
+            
+            int iMode = -1;
+            
+            for (int i=0; i<nModes; i++)
+            {
+                modes_D4 mode = modes[i];
+                if (width && mode.derived.width != width)
+                    continue;
+                if (height && mode.derived.height != height)
+                    continue;
+                if (scale && mode.derived.density != scale)
+                    continue;
                 if (freq && mode.derived.freq != freq)
                     continue;
                 if (!interlaced && ((mode.derived.flags & kDisplayModeInterlacedFlag) == kDisplayModeInterlacedFlag))
@@ -325,26 +324,26 @@ int cmdline_main(int argc, const char * argv[])
                 int mBitres = (mode.derived.depth == 4) ? 32 : 16;
                 if (bitRes && mBitres != bitRes)
                     continue;
-				
-				iMode = i;
-				break;
-				//fprintf (stdout, "mode: {resolution=%dx%d, scale = %.1f, freq = %d, bits/pixel = %d}\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mode.derived.depth);
-			}
-			
-			if (iMode != -1)
-			{
-				SetDisplayModeNum(display, iMode);
-			}
-			else
-			{
-				fprintf (stderr, "Error: could not select a new mode\n");
-			}
-			
-			free(modes);
-		}
-		
-		
+                
+                iMode = i;
+                break;
+                //fprintf (stdout, "mode: {resolution=%dx%d, scale = %.1f, freq = %d, bits/pixel = %d}\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mode.derived.depth);
+            }
+            
+            if (iMode != -1)
+            {
+                SetDisplayModeNum(display, iMode);
+            }
+            else
+            {
+                fprintf (stderr, "Error: could not select a new mode\n");
+            }
+            
+            free(modes);
+        }
+        
+        
     }
-	[pool release];
+    [pool release];
     return 0;
 }
