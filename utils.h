@@ -1,3 +1,5 @@
+#define kRotationDelay 500000  //usec
+
 typedef union
 {
     uint8_t rawData[0xDC];
@@ -24,6 +26,7 @@ extern "C"
     void CGSGetDisplayModeDescriptionOfLength(CGDirectDisplayID display, int idx, modes_D4* mode, int length);
 };
 
-
 void CopyAllDisplayModes(CGDirectDisplayID display, modes_D4** modes, int* cnt);
 void SetDisplayModeNum(CGDirectDisplayID display, int modeNum);
+extern io_service_t IOServicePortFromCGDisplayID(CGDirectDisplayID display);
+

@@ -11,7 +11,7 @@ int cmdline_main(int argc, const char * argv[])
         int freq;
         int bitRes = 0;
         int displayNo = -1;
-        double rotation = -1;
+        int rotation = -1;
         
         bool interlaced = 0;
         
@@ -205,6 +205,7 @@ int cmdline_main(int argc, const char * argv[])
             
             return 0;
         }
+
         if (listModes)
         {
             int nModes;
@@ -271,10 +272,37 @@ int cmdline_main(int argc, const char * argv[])
             return 0;
         }
         
-        if (rotation != -1.0f)
+        if (rotation != -1)
         {
-            fprintf (stderr, "Sorry, cannot adjust rotation at this time!\n");
-            exit(1);
+            //io_service_t service = CGDisplayIOServicePort(display);
+            io_service_t service = IOServicePortFromCGDisplayID(display);
+            
+            IOOptionBits options;
+            
+            switch(rotation)
+            {
+                default:
+                    options = (0x00000400 | (kIOScaleRotate0)  << 16);
+                    break;
+                case 90:
+                    options = (0x00000400 | (kIOScaleRotate90)  << 16);
+                    break;
+                case 180:
+                    options = (0x00000400 | (kIOScaleRotate180)  << 16);
+                    break;
+                case 270:
+                    options = (0x00000400 | (kIOScaleRotate270)  << 16);
+                    break;
+            }
+            
+            int retVal = IOServiceRequestProbe(service, options);
+
+            IOObjectRelease(service);
+            
+            if (retVal != 0)
+                fprintf(stderr, "Error rotating display %i\n", display);
+            
+            usleep(kRotationDelay);
         }
         
         // fill in missing details
@@ -327,7 +355,6 @@ int cmdline_main(int argc, const char * argv[])
                 
                 iMode = i;
                 break;
-                //fprintf (stdout, "mode: {resolution=%dx%d, scale = %.1f, freq = %d, bits/pixel = %d}\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mode.derived.depth);
             }
             
             if (iMode != -1)
