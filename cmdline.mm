@@ -189,9 +189,9 @@ int cmdline_main(int argc, const char * argv[])
             for (int i=0; i<nDisplays; i++)
             {
                 int modeNum;
-                CGSGetCurrentDisplayMode(display, &modeNum);
+                CGSGetCurrentDisplayMode(displays[i], &modeNum);
                 modes_D4 mode;
-                CGSGetDisplayModeDescriptionOfLength(display, modeNum, &mode, 0xD4);
+                CGSGetDisplayModeDescriptionOfLength(displays[i], modeNum, &mode, 0xD4);
                 
                 int mBitres = (mode.derived.depth == 4) ? 32 : 16;
                 interlaced = ((mode.derived.flags & kDisplayModeInterlacedFlag) == kDisplayModeInterlacedFlag);
@@ -205,6 +205,7 @@ int cmdline_main(int argc, const char * argv[])
             
             return 0;
         }
+        
 
         if (listModes)
         {
