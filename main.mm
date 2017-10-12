@@ -1,16 +1,17 @@
 #import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import "cmdline.h"
 
 int main(int argc, const char* argv[])
 {
-    int ret = -1;
-    if (argc > 1)
-    {
-        ret = cmdline_main(argc, argv);
-    }
-    
-    if (ret == -1)
-    {
+	int ret = -1;
+	if (argc > 1)
+	{
+		ret = cmdline_main(argc, argv);
+	}
+	
+	if (ret == -1)
+	{
         fprintf(stderr, "Commandline options\n"
                 "  --width       (-w)  Width\n"
                 "  --height      (-h)  Height\n"
@@ -22,7 +23,10 @@ int main(int argc, const char* argv[])
                 "  --rotation    (-r)  Rotation angle 0,90,180,270 (default=current)\n"
                 "  --displays    (-ld) List available displays\n"
                 "  --modes       (-lm) List available modes\n"
-                "  --commands    (-lc) List available command-lines\n"
-                "\n");
-    }
+                "  --commands    (-lc) List available command-lines\n");
+		
+		NSAutoreleasePool* pool = [NSAutoreleasePool new];
+		NSApplication* app = [NSApplication sharedApplication];
+		[pool release];
+	}
 }
