@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "utils.h"
 
+#define OSD 1
+
 int cmdline_main(int argc, const char * argv[])
 {
     NSAutoreleasePool* pool = [NSAutoreleasePool new];
@@ -18,6 +20,8 @@ int cmdline_main(int argc, const char * argv[])
         bool listDisplays = 0;
         bool listModes = 0;
         bool listCommands = 0;
+        
+        bool useOsd = 0;
         
         for (int i=1; i<argc; i++)
         {
@@ -73,6 +77,11 @@ int cmdline_main(int argc, const char * argv[])
                             if (i >= argc) return -1;
                             rotation = atof (argv[i]);
                             break;
+#ifdef OSD
+                        case 'o':
+                            useOsd = 1;
+                            break;
+#endif
                         default:
                             return -1;
                     }
@@ -150,6 +159,12 @@ int cmdline_main(int argc, const char * argv[])
                         if (i >= argc) return -1;
                         rotation = atof (argv[i]);
                     }
+#ifdef OSD
+                    else if (!strcmp(&argv[i][2], "osd"))
+                    {
+                        useOsd = 1;
+                    }
+#endif
                     else
                     {
                         return -1;
@@ -183,7 +198,7 @@ int cmdline_main(int argc, const char * argv[])
         {
             display = CGMainDisplayID();
         }
-        
+
         if (listDisplays)
         {
             for (int i=0; i<nDisplays; i++)
@@ -205,7 +220,6 @@ int cmdline_main(int argc, const char * argv[])
             
             return 0;
         }
-        
 
         if (listModes)
         {
@@ -356,11 +370,21 @@ int cmdline_main(int argc, const char * argv[])
                 
                 iMode = i;
                 break;
+                //fprintf (stdout, "mode: {resolution=%dx%d, scale = %.1f, freq = %d, bits/pixel = %d}\n", mode.derived.width, mode.derived.height, mode.derived.density, mode.derived.freq, mode.derived.depth);
             }
             
             if (iMode != -1)
             {
                 SetDisplayModeNum(display, iMode);
+#ifdef OSD
+                if (useOsd) {
+                    NSString *OSDisplay = @"/Applications/OSDisplay.app/Contents/MacOS/OSDisplay";
+                    [NSTask launchedTaskWithLaunchPath:OSDisplay arguments:[NSArray arrayWithObjects:
+                                                                            @"-m", [NSString stringWithFormat:@"%dx%d%@", width, height, (scale > 1) ? @" HiDPI" : @""],
+                                                                            @"-i", @"monitor", nil]];
+                    
+                }
+#endif
             }
             else
             {
